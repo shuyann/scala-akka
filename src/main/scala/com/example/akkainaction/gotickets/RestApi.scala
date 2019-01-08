@@ -41,6 +41,7 @@ trait RestRoutes extends BoxOfficeApi with EventMarshalling {
     pathPrefix("events" / Segment) { event =>
       pathEndOrSingleSlash {
         post {
+          // json body mapping as[type] keyword
           // POST /events/:event
           entity(as[EventDescription]) { ed =>
             onSuccess(createEvent(event, ed.tickets)) {

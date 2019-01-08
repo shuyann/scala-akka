@@ -33,6 +33,7 @@ class TicketSeller(event: String) extends Actor {
         sender() ! Tickets(event, entries)
         tickets = tickets.drop(nrOfTickets)
       } else {
+        // send empty entries ticket
         sender() ! Tickets(event)
       }
     case GetEvent => sender() ! Some(BoxOffice.Event(event, tickets.size))

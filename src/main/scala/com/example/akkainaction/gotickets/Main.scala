@@ -16,6 +16,7 @@ import scala.util.{Failure, Success}
 object Main extends App
   with RequestTimeout {
 
+  // load config file(application.conf)
   val config = ConfigFactory.load()
   // get host and port from config file
   val host = config.getString("http.host")
