@@ -1,2 +1,2 @@
 ### scala-akka
-Akkaの学習用リポジトリ
+scala akka example
