@@ -69,6 +69,7 @@ trait TicketInfoService extends WebServiceCalls {
 
   def getCarRoute(ticketInfo: TicketInfo): Future[TicketInfo] = {
     ticketInfo.event.map { event =>
+      // call traffic service synchronously
       callTrafficService(ticketInfo.userLocation, event.location, event.time).map { routeResponse =>
         val newTravelAdvice = ticketInfo.travelAdvice.map(_.copy(routeByCar = routeResponse))
         ticketInfo.copy(travelAdvice = newTravelAdvice)
@@ -78,6 +79,7 @@ trait TicketInfoService extends WebServiceCalls {
 
   def getPublicTransportAdvice(ticketInfo: TicketInfo): Future[TicketInfo] = {
     ticketInfo.event.map { event =>
+      // call public transport service synchro
       callPublicTransportService(ticketInfo.userLocation, event.location, event.time).map { publicTransportAdvice =>
         val newTravelAdvice = ticketInfo.travelAdvice.map(_.copy(publicTransportAdvice = publicTransportAdvice))
         ticketInfo.copy(travelAdvice = newTravelAdvice)
@@ -104,8 +106,9 @@ trait TicketInfoService extends WebServiceCalls {
   }
 
   def getPlannedEventsWithTraverse(event: Event, artists: Seq[Artist]): Future[Seq[Event]] = {
-    val events = artists.map(callArtistCalendarService(_, event.location))
-    Future.sequence(events)
+    Future.traverse(artists) { artist =>
+      callArtistCalendarService(artist, event.location)
+    }
   }
 
   def getPlannedEvents(event: Event, artists: Seq[Artist]): Future[Seq[Event]] = {
