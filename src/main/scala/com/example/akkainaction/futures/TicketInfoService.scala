@@ -79,7 +79,7 @@ trait TicketInfoService extends WebServiceCalls {
 
   def getPublicTransportAdvice(ticketInfo: TicketInfo): Future[TicketInfo] = {
     ticketInfo.event.map { event =>
-      // call public transport service synchro
+      // call public transport service synchronously
       callPublicTransportService(ticketInfo.userLocation, event.location, event.time).map { publicTransportAdvice =>
         val newTravelAdvice = ticketInfo.travelAdvice.map(_.copy(publicTransportAdvice = publicTransportAdvice))
         ticketInfo.copy(travelAdvice = newTravelAdvice)
