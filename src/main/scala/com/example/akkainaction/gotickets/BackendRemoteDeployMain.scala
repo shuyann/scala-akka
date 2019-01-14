@@ -1,9 +1,0 @@
-package com.example.akkainaction.gotickets
-
-import com.typesafe.config._
-import akka.actor.ActorSystem
-
-object BackendRemoteDeployMain extends App {
-  val config = ConfigFactory.load("backend")
-  val system = ActorSystem("backend", config)
-}
