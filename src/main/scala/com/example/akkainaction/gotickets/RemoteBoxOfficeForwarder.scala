@@ -6,6 +6,7 @@ import akka.util.Timeout
 
 import scala.concurrent.duration._
 
+// TODO: remote lookup in actorSelection
 object RemoteBoxOfficeForwarder {
   def props(implicit timeout: Timeout) = {
     Props(new RemoteBoxOfficeForwarder)
@@ -18,6 +19,7 @@ class RemoteBoxOfficeForwarder(implicit timeout: Timeout)
   extends Actor with ActorLogging {
   context.setReceiveTimeout(3 seconds)
 
+  // remote deploy and watch boxOffice
   deployAndWatch()
 
   def deployAndWatch(): Unit = {

@@ -17,6 +17,7 @@ object FrontendRemoteDeployWatchMain extends App
 
     implicit def executionContext = system.dispatcher
 
+    // create automatically using settings.
     def createBoxOffice: ActorRef = {
       system.actorOf(
         RemoteBoxOfficeForwarder.props,
