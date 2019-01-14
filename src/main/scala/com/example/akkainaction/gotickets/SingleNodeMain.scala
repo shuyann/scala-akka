@@ -6,7 +6,7 @@ import akka.event.Logging
 import com.typesafe.config.ConfigFactory
 
 
-object SingleNodeMain extends App with StartUp {
+object SingleNodeMain extends App with Startup {
   val systemName = "singlenode"
   val config = ConfigFactory.load(systemName)
   implicit val system = ActorSystem(systemName, config)
@@ -20,5 +20,5 @@ object SingleNodeMain extends App with StartUp {
     def createBoxOffice: ActorRef = system.actorOf(BoxOffice.props, BoxOffice.name)
   }
 
-  startUp(api.routes)
+  startup(api.routes)
 }

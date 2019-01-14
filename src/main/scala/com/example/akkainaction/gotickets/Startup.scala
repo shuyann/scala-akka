@@ -12,9 +12,9 @@ import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import scala.util.{Success, Failure}
 
-trait StartUp extends RequestTimeout {
+trait Startup extends RequestTimeout {
 
-  def startUp(api: Route)(implicit system: ActorSystem) = {
+  def startup(api: Route)(implicit system: ActorSystem) = {
     // Gets the host and port from the configuration.
     val host = system.settings.config.getString("http.host")
     val port = system.settings.config.getInt("http.port")

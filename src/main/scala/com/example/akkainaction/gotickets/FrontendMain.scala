@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.event.Logging
 import com.typesafe.config.ConfigFactory
 
-object FrontendMain extends App with StartUp {
+object FrontendMain extends App with Startup {
   val systemName = "frontend"
   val config = ConfigFactory.load(systemName)
   implicit val system = ActorSystem(systemName, config)
@@ -30,5 +30,5 @@ object FrontendMain extends App with StartUp {
       system.actorOf(Props(new RemoteLookupProxy(path)), "lookupBoxOffice")
     }
   }
-  startUp(api.routes)
+  startup(api.routes)
 }

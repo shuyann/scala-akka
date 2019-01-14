@@ -3,7 +3,7 @@ package com.example.akkainaction.gotickets
 import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
 
-object BackendMain extends App with StartUp {
+object BackendMain extends App with Startup {
   val systemName = "backend"
   val config = ConfigFactory.load(systemName)
   val system = ActorSystem(systemName, config)
