@@ -23,6 +23,7 @@ class SupervisorActor extends Actor {
     case ForChild(msg: String) => context.child("childActor")
       .getOrElse(context.actorOf(Props[ChildActor], "childActor")) ! msg
     case Child => sender ! context.child("childActor").getOrElse(context.actorOf(Props[ChildActor]))
+    case _ => println("unknown message.")
   }
 }
 
