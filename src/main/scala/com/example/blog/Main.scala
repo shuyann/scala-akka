@@ -23,5 +23,16 @@ object Main extends App {
     case Failure(ex) => sys.error(ex.toString)
   }
 
+  val supervisorActor = system.actorOf(Props[SupervisorActor], "supervisorActor")
+
+  supervisorActor ! "Hello"
+  supervisorActor ! ForChild("Hello")
+  val childActor = supervisorActor ? Child
+
+  childActor.onComplete {
+    case Success(ca) => println(ca.toString)
+    case Failure(ex) => sys.error(ex.toString)
+  }
+
   system.terminate()
 }
