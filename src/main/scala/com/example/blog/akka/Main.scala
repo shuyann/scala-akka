@@ -1,12 +1,12 @@
-package com.example.blog
+package com.example.blog.akka
 
 import akka.actor.{ActorSystem, Props}
-import akka.util.Timeout
 import akka.pattern.ask
+import akka.util.Timeout
 
-import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Success, Failure}
+import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 object Main extends App {
   implicit val timeout: Timeout = Timeout(5 seconds)

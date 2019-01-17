@@ -1,4 +1,4 @@
-package com.example.blog
+package com.example.blog.akka
 
 import akka.actor.Actor
 
