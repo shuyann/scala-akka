@@ -6,7 +6,6 @@ import akka.util.Timeout
 
 import scala.concurrent.duration._
 
-// TODO: remote lookup in actorSelection
 object RemoteBoxOfficeForwarder {
   def props(implicit timeout: Timeout) = {
     Props(new RemoteBoxOfficeForwarder)
@@ -24,15 +23,22 @@ class RemoteBoxOfficeForwarder(implicit timeout: Timeout)
 
   def deployAndWatch(): Unit = {
     val actor = context.actorOf(BoxOffice.props, BoxOffice.name)
-    context.watch(actor)
-    log.info("switching to maybe active state")
-    context.become(maybeActive(actor))
-    context.setReceiveTimeout(Duration.Undefined)
+    val selection = context.actorSelection(actor.path)
+    // remote actor(boxOffic) lookup
+    selection ! Identify(selection.pathString)
   }
 
   def receive = deploying
 
   def deploying: Receive = {
+    case ActorIdentity(_, Some(actor)) =>
+      context.setReceiveTimeout(Duration.Undefined)
+      log.info("switching to maybe active state")
+      context.become(maybeActive(actor))
+      context.watch(actor)
+
+    case ActorIdentity(path, None) =>
+      log.error(s"Remote actor with path $path is not available.")
 
     case ReceiveTimeout =>
       deployAndWatch()
@@ -42,7 +48,7 @@ class RemoteBoxOfficeForwarder(implicit timeout: Timeout)
   }
 
   def maybeActive(actor: ActorRef): Receive = {
-    case Terminated(actorRef) =>
+    case Terminated(_) =>
       log.info("Actor $actorRef terminated.")
       log.info("switching to deploying state")
       context.become(deploying)
