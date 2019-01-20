@@ -15,6 +15,7 @@ object FrontendMain extends App with Startup {
 
     implicit def executionContext = system.dispatcher
 
+    // create actor path from frontend configuration file.
     def createPath(): String = {
       val config = ConfigFactory.load("frontend").getConfig("backend")
       val host = config.getString("host")
