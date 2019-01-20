@@ -15,6 +15,7 @@ object FrontendRemoteDeployMain extends App
 
     implicit def executionContext = system.dispatcher
 
+    // deploy to backend
     def createBoxOffice: ActorRef = system.actorOf(BoxOffice.props, BoxOffice.name)
   }
 
