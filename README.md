@@ -1,2 +1,2 @@
 ### scala-akka
-scala akka example
+scala akka example project
