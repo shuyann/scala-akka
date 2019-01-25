@@ -5,8 +5,8 @@ import akka.actor.Actor
 class HelloActor extends Actor {
 
   def receive = {
-    case "Hello" => println("World")
+    case "Hello" => sender ! "World"
     case "How are you?" => sender ! "I'm fine thank you!"
-    case _ => println("unknown message.")
+    case _ => sender ! "unknown message."
   }
 }

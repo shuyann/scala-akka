@@ -9,7 +9,7 @@ case class Child()
 
 class ChildActor extends Actor {
   def receive = {
-    case msg: String => println(s"(Child): ${msg}")
+    case msg: String => sender ! s"(Child): ${msg}"
   }
 }
 
@@ -19,11 +19,11 @@ class SupervisorActor extends Actor {
   }
 
   def receive = {
-    case msg: String => println(s"(Supervisor): ${msg}")
+    case msg: String => sender ! s"(Supervisor): ${msg}"
     case ForChild(msg: String) => context.child("childActor")
       .getOrElse(context.actorOf(Props[ChildActor], "childActor")) ! msg
     case Child => sender ! context.child("childActor").getOrElse(context.actorOf(Props[ChildActor]))
-    case _ => println("unknown message.")
+    case _ => sender ! "unknown message."
   }
 }
 
