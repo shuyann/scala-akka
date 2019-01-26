@@ -1,11 +1,11 @@
 package com.example.akkainaction.futures
 
-import org.scalatest.MustMatchers
-import org.scalatest.WordSpec
 import scala.concurrent.{Future, Await}
 import scala.collection.immutable._
 
-class GetTicketInfoSpec extends WordSpec with MustMatchers {
+import org.specs2.mutable._
+
+class GetTicketInfoSpec extends SpecificationLike {
 
 
   object TicketInfoService extends TicketInfoService with MockWebServiceCalls
@@ -13,21 +13,22 @@ class GetTicketInfoSpec extends WordSpec with MustMatchers {
   import TicketInfoService._
   import scala.concurrent.duration._
 
-  "getTicketInfo" must {
+  "getTicketInfo" >> {
     "return a complete ticket info when all futures are successful" in {
       val ticketInfo = Await.result(getTicketInfo("1234", Location(1d, 2d)), 10.seconds)
 
-      ticketInfo.event.isEmpty must be(false)
-      ticketInfo.event.foreach(event => event.name must be("Quasimoto"))
-      ticketInfo.travelAdvice.isEmpty must be(false)
-      ticketInfo.suggestions.map(_.name) must be(Seq("Madlib", "OhNo", "Flying Lotus"))
+      ticketInfo.event.isEmpty must beFalse
+      ticketInfo.event.foreach(event => event.name must_== ("Quasimoto"))
+      ticketInfo.travelAdvice.isEmpty must beFalse
+      ticketInfo.suggestions.map(_.name) must_== Seq("Madlib", "OhNo", "Flying Lotus")
+
     }
     "return an incomplete ticket info when getEvent fails" in {
       val ticketInfo = Await.result(getTicketInfo("4321", Location(1d, 2d)), 10.seconds)
 
-      ticketInfo.event.isEmpty must be(true)
-      ticketInfo.travelAdvice.isEmpty must be(true)
-      ticketInfo.suggestions.isEmpty must be(true)
+      ticketInfo.event.isEmpty must beTrue
+      ticketInfo.travelAdvice.isEmpty must beTrue
+      ticketInfo.suggestions.isEmpty must beTrue
     }
   }
 }
