@@ -5,19 +5,18 @@ import com.example.blog.specs2.RabbitActor.SetName
 
 class RabbitActor extends Actor {
 
-  // name is mutable
   var name = ""
 
   def receive = {
     case SetName(value) => name = value
-    case "jump" => s"$name jumped!"
-    case "talk" => s"$name talked!"
+    case "jump" => sender ! s"$name jumped!"
+    case "talk" => sender ! s"$name talked!"
+    case _ => sys.error("unknown message.")
   }
 }
 
 object RabbitActor {
 
-  // set name message object.
   case class SetName(value: String)
 
 }

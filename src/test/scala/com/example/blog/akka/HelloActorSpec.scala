@@ -27,7 +27,8 @@ class HelloActorSpec extends TestKit(ActorSystem("testHelloActor"))
           (msg: String, expected: String) => {
             helloActor ! msg
             expectMsgPF() {
-              case actual => actual must_== expected
+              case m: String if m == expected => ok
+              case _ => ko
             }
           }
         }
