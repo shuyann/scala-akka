@@ -1,13 +1,38 @@
 package com.example.blog.akka
 
-class HelloActorSpec {
-  /** HelloActor */
-  // TODO: println("World") when receive "Hello"
-  // TODO:  "I'm fine thank you!" when receive "How are you?"
-  // TODO: println("unknown message.") when receive "foo"
+import akka.actor._
+import akka.testkit._
+import org.specs2.mutable._
+import org.specs2.specification.{AfterAll, Scope}
 
-  /** SupervisorActor */
-  // TODO: println("(Supervisor): Hello when receive "Hello"
-  // TODO: println("(Child): Hello when receive ForChild("Hello")
-  // TODO: println("unknown message.") when receive 0
+class HelloActorSpec extends TestKit(ActorSystem("testHelloActor"))
+  with SpecificationLike
+  with DefaultTimeout
+  with ImplicitSender
+  with Tables with AfterAll {
+
+  def afterAll = system.terminate()
+
+  trait TestHelloActor extends Scope {
+    val helloActor = system.actorOf(Props[HelloActor], "helloActor")
+  }
+
+  "HelloActor" >> {
+    "#receive" >> {
+      "it returns valid response" in new TestHelloActor {
+        "msg" | "expected" |
+          "Hello" ! "World" |
+          "How are you?" ! "I'm fine thank you!" |
+          "foo" ! "unknown message." |> {
+          (msg: String, expected: String) => {
+            helloActor ! msg
+            expectMsgPF() {
+              case actual => actual must_== expected
+            }
+          }
+        }
+      }
+    }
+  }
 }
+
