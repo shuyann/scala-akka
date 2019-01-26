@@ -17,6 +17,7 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-remote" % akkaVersion,
     "ch.qos.logback" % "logback-classic" % "1.1.6",
     "com.github.nscala-time" %% "nscala-time" % "2.16.0",
+    "com.softwaremill.quicklens" %% "quicklens" % "1.4.11",
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
     "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion % "test",
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
