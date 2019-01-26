@@ -14,7 +14,7 @@ class HelloActorSpec extends TestKit(ActorSystem("testHelloActor"))
   def afterAll = system.terminate()
 
   trait TestHelloActor extends Scope {
-    val helloActor = system.actorOf(Props[HelloActor], "helloActor")
+    val helloActor = system.actorOf(Props[HelloActor])
   }
 
   "HelloActor" >> {
