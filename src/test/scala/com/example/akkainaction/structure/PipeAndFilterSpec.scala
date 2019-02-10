@@ -8,7 +8,7 @@ import org.specs2.specification.AfterAll
 import scala.concurrent.duration._
 
 
-class PipeAndFilterSpec extends TestKit(ActorSystem("testsystem"))
+class PipeAndFilterSpec extends TestKit(ActorSystem("testPipeAndFilter"))
   with SpecificationLike
   with DefaultTimeout
   with ImplicitSender
