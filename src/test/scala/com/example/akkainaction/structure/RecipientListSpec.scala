@@ -17,7 +17,7 @@ class RecipientListSpec extends TestKit(ActorSystem("testRecipientList"))
 
   override val timeout = 2 seconds
 
-  "Filters" >> {
+  "ScatterGather" >> {
     "with scatter messsage" >> {
       "it returns valid response" in {
         val endProbe1 = TestProbe()
