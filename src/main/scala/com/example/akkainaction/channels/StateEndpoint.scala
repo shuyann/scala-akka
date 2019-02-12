@@ -1,6 +1,6 @@
 package com.example.akkainaction.channels
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorLogging}
 import java.util.Date
 
 case class StateEvent(time: Date, state: String)
@@ -10,25 +10,23 @@ case class Connection(time: Date, connected: Boolean)
 class StateEndpoint extends Actor {
   def receive = {
     case Connection(time, true) => {
-      context.system.eventStream.publish(new StateEvent(time, "Connected"))
+      context.system.eventStream.publish(StateEvent(time, "Connected"))
     }
     case Connection(time, false) => {
-      context.system.eventStream.publish(new StateEvent(time, "Disconnected"))
+      context.system.eventStream.publish(StateEvent(time, "Disconnected"))
     }
   }
 }
 
-class SystemLog extends Actor {
+class SystemLog extends Actor with ActorLogging {
   def receive = {
-    case event: StateEvent => {
-    }
+    case event: StateEvent => log.info(s"Receive SystemLog ${event.toString}")
   }
 }
 
-class SystemMonitor extends Actor {
+class SystemMonitor extends Actor with ActorLogging {
   def receive = {
-    case event: StateEvent => {
-    }
+    case event: StateEvent => log.info(s"Receive SystemMonitor ${event.toString}")
   }
 }
 
@@ -49,8 +47,7 @@ class OrderMessageBus extends EventBus
     event.number > 1
   }
 
-  protected def publish(event: OrderMessageBus#Event,
-                        subscriber: OrderMessageBus#Subscriber) {
+  protected def publish(event: OrderMessageBus#Event, subscriber: OrderMessageBus#Subscriber) {
     subscriber ! event
   }
 }
