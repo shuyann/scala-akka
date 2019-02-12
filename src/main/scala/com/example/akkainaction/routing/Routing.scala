@@ -7,9 +7,7 @@ import akka.actor._
 import akka.dispatch.Dispatchers
 import akka.routing._
 
-
 case class PerformanceRoutingMessage(photo: String, license: Option[String], processedBy: Option[String])
-
 
 case class SetService(id: String, serviceTime: FiniteDuration)
 

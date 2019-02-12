@@ -4,7 +4,7 @@ import akka.actor._
 import akka.routing._
 
 
-class TestSuper() extends Actor {
+class TestSuper extends Actor with ActorLogging {
   def receive = {
     case "OK" =>
     case _ => throw new IllegalArgumentException("not supported")
@@ -12,11 +12,11 @@ class TestSuper() extends Actor {
 
   override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
     super.preRestart(reason, message)
-    println("restart %s".format(self.path.toString))
+    log.info(s"restart ${self.path.toString}")
   }
 }
 
-class GetLicenseCreator(nrActors: Int, nextStep: ActorRef) extends Actor {
+class GetLicenseCreator(nrActors: Int, nextStep: ActorRef) extends Actor with ActorLogging {
   var createdActors = Seq[ActorRef]()
 
   override def preStart(): Unit = {
@@ -36,12 +36,11 @@ class GetLicenseCreator(nrActors: Int, nextStep: ActorRef) extends Actor {
 
   override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
     super.preRestart(reason, message)
-    println("restart %s".format(self.path.toString))
+    log.info(s"restart ${self.path.toString}")
   }
 }
 
-class GetLicenseCreator2(nrActors: Int, nextStep: ActorRef) extends Actor {
-  //restart children
+class GetLicenseCreator2(nrActors: Int, nextStep: ActorRef) extends Actor with ActorLogging {
   override def preStart(): Unit = {
     super.preStart()
     (0 until nrActors).map(nr => {
@@ -51,32 +50,30 @@ class GetLicenseCreator2(nrActors: Int, nextStep: ActorRef) extends Actor {
   }
 
   def receive = {
-    case "KillFirst" => {
-      if (!context.children.isEmpty) {
-        context.children.head ! PoisonPill
-      }
-    }
-    case Terminated(child) => {
+    case "KillFirst" =>
+      if (context.children.nonEmpty) context.children.head ! PoisonPill
+
+    case Terminated(child) =>
       val newChild = context.actorOf(Props(new GetLicense(nextStep)), child.path.name)
       context.watch(newChild)
-    }
+
   }
 
   override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
     super.preRestart(reason, message)
-    println("restart %s".format(self.path.toString))
+    log.info(s"restart ${self.path.toString}")
   }
 }
 
 case class PreferredSize(size: Int)
 
-class WrongDynamicRouteeSizer(nrActors: Int, props: Props, router: ActorRef) extends Actor {
+class WrongDynamicRouteeSizer(nrActors: Int, props: Props, router: ActorRef) extends Actor with ActorLogging {
   var nrChildren = nrActors
 
   //restart children
   override def preStart(): Unit = {
     super.preStart()
-    (0 until nrChildren).map(nr => createRoutee())
+    (0 until nrChildren).map(_ => createRoutee())
   }
 
   def createRoutee(): Unit = {
@@ -88,14 +85,14 @@ class WrongDynamicRouteeSizer(nrActors: Int, props: Props, router: ActorRef) ext
     case PreferredSize(size) => {
       if (size < nrChildren) {
         //remove
-        println("Delete %d children".format(nrChildren - size))
+        log.info(s"Delete ${nrChildren - size} children")
         context.children.take(nrChildren - size).foreach(ref => {
-          println("delete: " + ref)
+          log.info(s"Delete: ${ref}")
           router ! RemoveRoutee(ActorRefRoutee(ref))
         })
         router ! GetRoutees
       } else {
-        (nrChildren until size).map(nr => createRoutee())
+        (nrChildren until size).map(_ => createRoutee())
       }
       nrChildren = size
     }
@@ -105,30 +102,28 @@ class WrongDynamicRouteeSizer(nrActors: Int, props: Props, router: ActorRef) ext
         case x: ActorRefRoutee => x.ref.path.toString
         case x: ActorSelectionRoutee => x.selection.pathString
       }
-      println("Active: " + active)
+      log.info(s"Active: $active")
       val notUsed = context.children.filterNot(routee => active.contains(routee.path.toString))
-      println("Not used: " + notUsed)
+      log.info(s"Not used: $notUsed")
       notUsed.foreach(context.stop(_))
     }
   }
 
   override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
     super.preRestart(reason, message)
-    println("restart %s".format(self.path.toString))
+    log.info(s"restart ${self.path.toString}")
   }
 }
 
 
-class DynamicRouteeSizer(nrActors: Int,
-                         props: Props,
-                         router: ActorRef) extends Actor {
+class DynamicRouteeSizer(nrActors: Int, props: Props, router: ActorRef) extends Actor {
   var nrChildren = nrActors
   var childInstanceNr = 0
 
   //restart children
   override def preStart(): Unit = {
     super.preStart()
-    (0 until nrChildren).map(nr => createRoutee())
+    (0 until nrChildren).map(_ => createRoutee())
   }
 
   def createRoutee(): Unit = {
@@ -177,18 +172,18 @@ class DynamicRouteeSizer(nrActors: Int,
         context.watch(child)
       }
     }
-    case Terminated(child) => router ! GetRoutees
+    case Terminated(_) => router ! GetRoutees
   }
 }
 
 
-class DynamicRouteeSizer2(nrActors: Int, props: Props, router: ActorRef) extends Actor {
+class DynamicRouteeSizer2(nrActors: Int, props: Props, router: ActorRef) extends Actor with ActorLogging {
   var nrChildren = nrActors
 
   //restart children
   override def preStart(): Unit = {
     super.preStart()
-    (0 until nrChildren).map(nr => createRoutee())
+    (0 until nrChildren).map(_ => createRoutee())
   }
 
   def createRoutee(): Unit = {
@@ -196,7 +191,7 @@ class DynamicRouteeSizer2(nrActors: Int, props: Props, router: ActorRef) extends
     val selection = context.actorSelection(child.path)
     router ! AddRoutee(ActorSelectionRoutee(selection))
     context.watch(child)
-    println("Add routee " + child)
+    log.info(s"Add routee ${child}")
   }
 
   def receive = {
@@ -204,26 +199,26 @@ class DynamicRouteeSizer2(nrActors: Int, props: Props, router: ActorRef) extends
       val currentNumber = context.children.size
       if (size < currentNumber) {
         //remove
-        println("Delete %d children".format(currentNumber - size))
+        log.info(s"Delete children ${currentNumber - size}")
         context.children.take(currentNumber - size).foreach(ref => {
-          println("delete: " + ref)
+          log.info(s"delete: ${ref}")
           context.stop(ref)
         })
       } else {
-        (currentNumber until size).map(nr => createRoutee())
+        (currentNumber until size).map(_ => createRoutee())
       }
       nrChildren = size
     }
     case routees: Routees => {
 
-      println("routees " + routees)
+      log.info(s"routees ${routees}")
       if (routees.getRoutees.size() < nrChildren) {
-        (routees.getRoutees.size() until nrChildren).map(nr => createRoutee())
+        (routees.getRoutees.size() until nrChildren).map(_ => createRoutee())
       }
 
     }
     case Terminated(child) => {
-      println("Terminated " + child)
+      log.info(s"Terminated ${child}")
       val selection = context.actorSelection(child.path)
       router ! RemoveRoutee(ActorSelectionRoutee(selection))
       router ! GetRoutees
@@ -232,7 +227,7 @@ class DynamicRouteeSizer2(nrActors: Int, props: Props, router: ActorRef) extends
 
   override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
     super.preRestart(reason, message)
-    println("restart %s".format(self.path.toString))
+    log.info(s"restart ${self.path.toString}")
   }
 }
 
