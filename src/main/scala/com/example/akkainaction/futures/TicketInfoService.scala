@@ -7,11 +7,8 @@ import scala.collection.immutable._
 
 trait TicketInfoService extends WebServiceCalls {
 
-  // defined implicit global execution context
   import scala.concurrent.ExecutionContext.Implicits.global
 
-
-  // type to minimize copy and paste.
   type Recovery[T] = PartialFunction[Throwable, T]
 
   // recover with None.
@@ -35,26 +32,22 @@ trait TicketInfoService extends WebServiceCalls {
 
     eventInfo.flatMap { info =>
       val infoWithWeather = getWeather(info)
-
-      val infoWithTravelAdvice = info.event.map { event =>
-        getTravelAdvice(info, event)
-      }.getOrElse(eventInfo)
-
-      val suggestedEvents = info.event.map { event =>
-        getSuggestions(event)
-      }.getOrElse(Future.successful(Seq()))
+      val infoWithTravelAdvice = info.event.map(getTravelAdvice(info, _)).getOrElse(eventInfo)
+      val suggestedEvents = info.event.map(getSuggestions(_)).getOrElse(Future.successful(Seq.empty))
 
       val ticketInfos = Seq(infoWithTravelAdvice, infoWithWeather)
 
       val infoWithTravelAndWeather: Future[TicketInfo] = Future.foldLeft(ticketInfos)(info) { (acc, elem) =>
-        val (travelAdvice, weather) = (elem.travelAdvice, elem.weather)
+        val travelAdvice = elem.travelAdvice
+        val weather = elem.weather
 
         acc.copy(travelAdvice = travelAdvice.orElse(acc.travelAdvice), weather = weather.orElse(acc.weather))
       }
 
-      for (info <- infoWithTravelAndWeather;
-           suggestions <- suggestedEvents
-      ) yield info.copy(suggestions = suggestions)
+      for {
+        info <- infoWithTravelAndWeather
+        suggestions <- suggestedEvents
+      } yield info.copy(suggestions = suggestions)
     }
   }
 
@@ -118,9 +111,10 @@ trait TicketInfoService extends WebServiceCalls {
 
   def getSuggestions(event: Event): Future[Seq[Event]] = {
     val futureArtists = callSimilarArtistsService(event).recover(withEmptySeq)
-    for (artists <- futureArtists.recover(withEmptySeq);
-         events <- getPlannedEvents(event, artists).recover(withEmptySeq)
-    ) yield events
+    for {
+      artists <- futureArtists.recover(withEmptySeq)
+      events <- getPlannedEvents(event, artists).recover(withEmptySeq)
+    } yield events
   }
 
   def getSuggestionsWithFlatMapAndMap(event: Event): Future[Seq[Event]] = {
@@ -133,9 +127,9 @@ trait TicketInfoService extends WebServiceCalls {
   def getTravelAdviceUsingForComprehension(info: TicketInfo, event: Event): Future[TicketInfo] = {
     val futureRoute = callTrafficService(info.userLocation, event.location, event.time).recover(withNone)
     val futurePublicTransport = callPublicTransportService(info.userLocation, event.location, event.time).recover(withNone)
-    for ((routeByCar, publicTransportService) <- futureRoute.zip(futurePublicTransport);
-         travelAdvice = TravelAdvice(routeByCar, publicTransportService)
-    ) yield info.copy(travelAdvice = Some(travelAdvice))
+    for {
+      (routeByCar, publicTransportService) <- futureRoute.zip(futurePublicTransport)
+    } yield info.copy(travelAdvice = Some(TravelAdvice(routeByCar, publicTransportService)))
   }
 }
 
