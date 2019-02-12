@@ -37,8 +37,7 @@ class LifeCycleHooks extends Actor with ActorLogging {
   }
 
   def receive = {
-    case ForceRestart =>
-      throw new ForceRestartException
+    case ForceRestart => throw new ForceRestartException
     case msg: AnyRef =>
       log.info(s"Received: $msg . Sending back")
       sender() ! msg

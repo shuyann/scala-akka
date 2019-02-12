@@ -9,8 +9,7 @@ object DbStrategy2 {
     context.watch(dbWriter)
 
     def receive = {
-      case Terminated(actorRef) =>
-        log.warning("Actor {} terminated", actorRef)
+      case Terminated(actorRef) => log.warning("Actor {} terminated", actorRef)
     }
   }
 

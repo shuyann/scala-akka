@@ -16,11 +16,8 @@ package dbstrategy3 {
 
     val writerProps = Props(new DbWriter(databaseUrl))
     val dbSuperProps = Props(new DbSupervisor(writerProps))
-    val logProcSuperProps = Props(
-      new LogProcSupervisor(dbSuperProps))
-    val topLevelProps = Props(new FileWatcherSupervisor(
-      sources,
-      logProcSuperProps))
+    val logProcSuperProps = Props(new LogProcSupervisor(dbSuperProps))
+    val topLevelProps = Props(new FileWatcherSupervisor(sources, logProcSuperProps))
     system.actorOf(topLevelProps)
   }
 
@@ -28,9 +25,7 @@ package dbstrategy3 {
                               logProcSuperProps: Props) extends Actor {
     var fileWatchers: Vector[ActorRef] = sources.map { source =>
       val logProcSupervisor = context.actorOf(logProcSuperProps)
-      val fileWatcher = context.actorOf(
-        Props(new FileWatcher(source, logProcSupervisor))
-      )
+      val fileWatcher = context.actorOf(Props(new FileWatcher(source, logProcSupervisor)))
       context.watch(fileWatcher)
       fileWatcher
     }
@@ -46,8 +41,7 @@ package dbstrategy3 {
     }
   }
 
-  class FileWatcher(sourceUri: String,
-                    logProcSupervisor: ActorRef) extends Actor with FileWatchingAbilities {
+  class FileWatcher(sourceUri: String, logProcSupervisor: ActorRef) extends Actor with FileWatchingAbilities {
     register(sourceUri)
 
     import FileWatcherProtocol._
@@ -159,7 +153,9 @@ package dbstrategy3 {
   }
 
   trait FileWatchingAbilities {
-    def register(uri: String): Unit = ???
+    def register(uri: String): Unit = {
+      println(s"register uri $uri")
+    }
   }
 
   object LogProcessingProtocol {

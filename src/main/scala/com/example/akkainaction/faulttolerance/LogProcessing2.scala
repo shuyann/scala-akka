@@ -32,11 +32,7 @@ package dbstrategy2 {
     def name = "file-watcher-supervisor"
   }
 
-  class LogProcessingSupervisor(
-                                 sources: Vector[String],
-                                 databaseUrls: Vector[String]
-                               ) extends Actor with ActorLogging {
-
+  class LogProcessingSupervisor(sources: Vector[String], databaseUrls: Vector[String]) extends Actor with ActorLogging {
     var fileWatchers: Vector[ActorRef] = sources.map { source =>
       val fileWatcher = context.actorOf(Props(new FileWatcher(source, databaseUrls)))
       context.watch(fileWatcher)
@@ -44,7 +40,7 @@ package dbstrategy2 {
     }
 
     override def supervisorStrategy: SupervisorStrategy = AllForOneStrategy() {
-      case _: DiskError => Stop // DiskErrorを受け取った際にはFileWatcherとその子アクター全てを停止
+      case _: DiskError => Stop
     }
 
     def receive = {
@@ -149,7 +145,6 @@ package dbstrategy2 {
     def name(databaseUrl: String) =
       s"db-writer-${databaseUrl}"
 
-    // Line in log file
     case class Line(time: Long, message: String, messageType: String)
 
   }
@@ -204,7 +199,7 @@ package dbstrategy2 {
 
   trait FileWatchingAbilities {
     def register(uri: String): Unit = {
-
+      println(s"register uri: $uri")
     }
   }
 

@@ -28,13 +28,10 @@ package dbstrategy1 {
     def name = "file-watcher-supervisor"
   }
 
-  class LogProcessingSupervisor(
-                                 sources: Vector[String],
-                                 databaseUrl: String
-                               ) extends Actor with ActorLogging {
+  class LogProcessingSupervisor(sources: Vector[String], databaseUrl: String) extends Actor with ActorLogging {
     override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {
-      case _: CorruptedFileException => Resume // 続行
-      case _: DbBrokenConnectionException => Restart // 再起動
+      case _: CorruptedFileException => Resume
+      case _: DbBrokenConnectionException => Restart
       case _: DiskError => Stop
     }
 
@@ -164,7 +161,7 @@ package dbstrategy1 {
 
   trait FileWatchingAbilities {
     def register(url: String): Unit = {
-
+      println(s"register url: $url")
     }
   }
 
