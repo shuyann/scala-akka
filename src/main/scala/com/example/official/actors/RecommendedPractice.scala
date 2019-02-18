@@ -13,8 +13,8 @@ class DemoActor(magicNumber: Int) extends Actor {
   }
 }
 
-object MyActor {
-  def props = Props[MyActor]
+object PActor {
+  def props = Props[PActor]
 
   case class Greeting(from: String)
 
@@ -22,9 +22,9 @@ object MyActor {
 
 }
 
-class MyActor extends Actor with ActorLogging {
+class PActor extends Actor with ActorLogging {
 
-  import MyActor._
+  import PActor._
 
   val initialGreet = ""
   var greet = initialGreet
@@ -42,12 +42,12 @@ class MyActor extends Actor with ActorLogging {
 
 class RecommendedPractice extends App {
 
-  import MyActor._
+  import PActor._
 
   val system = ActorSystem("testSystem")
   val demoActor = system.actorOf(DemoActor.props(10))
   demoActor ! 5
-  val myActor = system.actorOf(MyActor.props)
+  val myActor = system.actorOf(PActor.props)
   myActor ! Greeting("foo")
   myActor ! GoodBye
   system.terminate()
