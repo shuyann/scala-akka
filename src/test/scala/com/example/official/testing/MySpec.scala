@@ -1,8 +1,12 @@
 package com.example.official.testing
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.{Actor, ActorRef, ActorSystem, PoisonPill, Props}
 import akka.testkit.{ImplicitSender, TestActors, TestKit, TestProbe}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
+import akka.pattern.ask
+import akka.util.Timeout
+import scala.util.Success
+
 import scala.concurrent.duration._
 
 class MySpec() extends TestKit(ActorSystem("MySpec")) with ImplicitSender
@@ -11,6 +15,8 @@ class MySpec() extends TestKit(ActorSystem("MySpec")) with ImplicitSender
   override def afterAll: Unit = {
     TestKit.shutdownActorSystem(system)
   }
+
+  implicit val timeout = Timeout(3 seconds)
 
   "An Testing Actor" must {
     "send back messages 'hello world' unchanged" in {
@@ -39,6 +45,34 @@ class MySpec() extends TestKit(ActorSystem("MySpec")) with ImplicitSender
       worker.ref.path.name should startWith("worker")
       aggregator.ref.path.name should startWith("aggregator")
     }
+    "watching other actors from probes" in {
+      val probe = TestProbe()
+      val target = system.actorOf(TestActors.echoActorProps)
+      probe.watch(target)
+      target ! PoisonPill
+      probe.expectTerminated(target)
+    }
+    "replying to messages received by probes" in {
+      val probe = TestProbe()
+      val future = probe.ref ? "hello"
+      probe.expectMsg(0 millis, "hello") // TestActor runs on CallingThreadDispatcher
+      probe.reply("world")
+      assert(future.isCompleted && future.value.contains(Success("world")))
+    }
+    "forwarding messages received by probes" in {
+      val probe = TestProbe()
+      val source = system.actorOf(Props(classOf[Source], probe.ref))
+      val dest = system.actorOf(Props[Destination])
+      source ! "start"
+      probe.expectMsg("work")
+      probe.forward(dest)
+    }
+    "testing parent-child relationships" in {
+      val parent = TestProbe()
+      val child = parent.childActorOf(Props(new Child))
+      parent.send(child, "ping")
+      parent.expectMsg("pong")
+    }
   }
 }
 
@@ -53,5 +87,34 @@ class MyDoubleEcho extends Actor {
     case x =>
       dest1 ! x
       dest2 ! x
+  }
+}
+
+class Source(target: ActorRef) extends Actor {
+  def receive = {
+    case "start" => target ! "work"
+  }
+}
+
+class Destination extends Actor {
+  def receive = {
+    case x => // Do something..
+  }
+}
+
+class Parent extends Actor {
+  val child = context.actorOf(Props[Child], "child")
+  var ponged = false
+
+  def receive = {
+    case "pingit" => child ! "ping"
+    case "pong" => ponged = true
+  }
+}
+
+class Child extends Actor {
+
+  def receive = {
+    case "ping" => context.parent ! "pong"
   }
 }
