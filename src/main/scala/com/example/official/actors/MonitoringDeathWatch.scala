@@ -40,7 +40,7 @@ class Follower extends Actor {
     case ActorIdentity(`identifyId`, Some(ref)) =>
       context.watch(ref)
       context.become(active(ref))
-    case ActorIdentity(`identifyId`, None) => context.stop()
+    case ActorIdentity(`identifyId`, None) => context.stop(self)
 
   }
 
