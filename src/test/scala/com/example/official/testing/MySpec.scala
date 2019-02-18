@@ -12,8 +12,7 @@ class MySpec() extends TestKit(ActorSystem("MySpec")) with ImplicitSender
     TestKit.shutdownActorSystem(system)
   }
 
-  "An Echo actor" must {
-
+  "An Testing Actor" must {
     "send back messages 'hello world' unchanged" in {
       val echo = system.actorOf(TestActors.echoActorProps)
       echo ! "hello world"
@@ -32,6 +31,13 @@ class MySpec() extends TestKit(ActorSystem("MySpec")) with ImplicitSender
       actor ! "hello"
       probe1.expectMsg(500 millis, "hello")
       probe2.expectMsg(500 millis, "hello")
+    }
+    "actor names in valid when have many test probes" in {
+      val worker = TestProbe("worker")
+      val aggregator = TestProbe("aggregator")
+
+      worker.ref.path.name should startWith("worker")
+      aggregator.ref.path.name should startWith("aggregator")
     }
   }
 }
