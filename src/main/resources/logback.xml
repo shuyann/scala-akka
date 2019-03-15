@@ -12,7 +12,6 @@
     <logger name="spray" level="INFO"/>
 
     <logger name="com.goticks" level="INFO"/>
-    <logger name="com.books" level="INFO"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
